@@ -1,0 +1,60 @@
+{
+  "name": "checkinvilla",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Villa check-in/check-out desktop app with Electron, React, Express, and SQLite",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development concurrently -k \"npm:dev:backend\" \"npm:dev:frontend\" \"npm:dev:electron\"",
+    "dev:frontend": "npm --prefix app/frontend run dev",
+    "dev:backend": "npm --prefix app/backend run dev",
+    "dev:electron": "wait-on tcp:3001 tcp:5173 && cross-env FRONTEND_DEV_URL=http://localhost:5173 electron electron/main.js",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "npm --prefix app/frontend run build",
+    "build:backend": "npm --prefix app/backend run build",
+    "prisma:generate": "npm --prefix app/backend run prisma:generate",
+    "seed": "npm --prefix app/backend run seed",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:win": "npm run build && electron-builder --win",
+    "lint": "npm --prefix app/frontend run lint && npm --prefix app/backend run lint"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "sqlite",
+    "villa-management"
+  ],
+  "author": "Andi Hoxhaj",
+  "license": "MIT",
+  "workspaces": [
+    "app/frontend",
+    "app/backend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.0.1",
+    "cross-env": "^7.0.3",
+    "electron": "^31.2.0",
+    "electron-builder": "^25.0.5",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.checkinvilla.app",
+    "files": [
+      "electron",
+      "app/frontend/dist",
+      "app/backend/dist",
+      "app/database",
+      "app/invoices",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

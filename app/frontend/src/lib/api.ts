@@ -23,7 +23,7 @@ export const createBooking = async (payload: {
 };
 
 export const checkoutBooking = async (bookingId: number) => {
-  const { data } = await api.post<Booking>('/bookings/checkout', { bookingId });
+  const { data } = await api.post<Booking & { pdfUrl?: string }>('/bookings/checkout', { bookingId });
   return data;
 };
 

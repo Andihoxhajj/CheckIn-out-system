@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Booking, Villa } from '@/types';
 import {
-  checkoutBooking,
+  checkoutBooking as checkoutBookingApi,
   createBooking,
   fetchHistory,
   fetchVillas,
@@ -16,7 +16,7 @@ interface VillaState {
   fetchVillas: () => Promise<void>;
   fetchHistory: (filters?: { villaId?: number; from?: string; to?: string }) => Promise<void>;
   createBooking: (payload: Omit<Parameters<typeof createBooking>[0], never>) => Promise<void>;
-  checkoutBooking: (bookingId: number) => Promise<void>;
+  checkoutBooking: (bookingId: number) => Promise<string | undefined>;
   updateVillaPrice: (id: number, pricePerNight: number) => Promise<void>;
   updateVillaStatus: (id: number, status: Villa['status']) => Promise<void>;
 }
@@ -51,8 +51,9 @@ export const useVillaStore = create<VillaState>((set, get) => ({
     await Promise.all([get().fetchVillas(), get().fetchHistory()]);
   },
   checkoutBooking: async (bookingId) => {
-    await checkoutBooking(bookingId);
+    const result = await checkoutBookingApi(bookingId);
     await Promise.all([get().fetchVillas(), get().fetchHistory()]);
+    return result.pdfUrl;
   },
   updateVillaPrice: async (id, pricePerNight) => {
     await updateVilla({ id, pricePerNight });

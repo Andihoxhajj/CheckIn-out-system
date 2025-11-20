@@ -123,8 +123,12 @@ export const Dashboard = () => {
         onClose={() => setCheckoutId(undefined)}
         onConfirm={async () => {
           if (checkoutId) {
-            await checkoutBooking(checkoutId);
+            const pdfUrl = await checkoutBooking(checkoutId);
             setCheckoutId(undefined);
+            if (pdfUrl) {
+              // Open PDF in new window/tab
+              window.open(`http://localhost:3001${pdfUrl}`, '_blank');
+            }
           }
         }}
       />

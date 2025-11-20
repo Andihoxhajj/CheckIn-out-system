@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
 import './env';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { z } from 'zod';
@@ -13,6 +15,21 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Serve PDF invoices
+app.get('/invoices/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(config.invoiceDir, filename);
+  
+  if (!fs.existsSync(filePath)) {
+    res.status(404).json({ message: 'Invoice not found' });
+    return;
+  }
+  
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+  res.sendFile(path.resolve(filePath));
+});
 
 const bookingSchema = z.object({
   guestName: z.string().min(2),
@@ -159,6 +176,8 @@ app.post('/bookings/checkout', async (req, res) => {
     villa: booking.villa,
   });
 
+  const pdfFilename = path.basename(pdfPath);
+
   const updatedBooking = await prisma.booking.update({
     where: { id: booking.id },
     data: { status: 'Completed', pdfPath },
@@ -169,7 +188,10 @@ app.post('/bookings/checkout', async (req, res) => {
     data: { status: 'Cleaning' },
   });
 
-  res.json(updatedBooking);
+  res.json({
+    ...updatedBooking,
+    pdfUrl: `/invoices/${pdfFilename}`,
+  });
 });
 
 app.get('/bookings/history', async (req, res) => {
